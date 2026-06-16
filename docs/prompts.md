@@ -148,3 +148,159 @@
 ```
 
 ---
+
+# Промпт 06
+
+## Параметры
+
+| Параметр | Значение |
+| ----- | ----- |
+| **Agent** | Cursor IDE |
+| **Plugins, rules, skills, MCPs** | user-rag-knowledge-base MCP (`index_folder`, `index_status`, `find_relevant_docs`), log-agent-prompts |
+| **Context** | `sample_docs/book/`, `sample_docs/code` |
+| **Mode** | agent |
+| **Model** | auto |
+
+## Текст промпта
+
+```
+rag-knowledge-base индексируй @sample_docs/book/  и @sample_docs/code/
+```
+
+## Результат
+
+```
+Вызван index_folder для /app/sample_docs/book (2 файла, 433 чанка) и /app/sample_docs/code (114 файлов, 2971 чанк). Windows-пути недоступны MCP — использованы пути внутри Docker. Повторная индексация book после code для сохранения обоих корпусов. find_relevant_docs подтвердил наличие книг (Майк Душнов) и кода (deepagents). index_status: 114 файлов, 2971 чанков, last_indexed_at: 2026-06-16T16:22:18Z.
+```
+
+---
+
+# Промпт 07
+
+## Параметры
+
+| Параметр | Значение |
+| ----- | ----- |
+| **Agent** | Cursor IDE |
+| **Plugins, rules, skills, MCPs** | user-rag-knowledge-base MCP (`ask_question`, `find_relevant_docs`, `index_status`), log-agent-prompts |
+| **Context** | проиндексированный `sample_docs/code/deepagents` |
+| **Mode** | agent |
+| **Model** | auto |
+
+## Текст промпта
+
+```
+ask_question о чем проект deepagents, какие ключевые возможности
+```
+
+## Результат
+
+```
+ask_question на русском дважды завершился ошибкой (Ollama/phi3). На английском — слабый ответ (1 источник: package.json). find_relevant_docs вернул README, agent.ts, subagents.ts, CHANGELOG. Синтезирован ответ: deepagents — JS-библиотека (LangChain/LangGraph) для controllable AI agents; planning (write_todos), filesystem, sub-agents (task), middleware, pluggable backends, createDeepAgent, browser/node entrypoints.
+```
+
+---
+
+# Промпт 08
+
+## Параметры
+
+| Параметр | Значение |
+| ----- | ----- |
+| **Agent** | Cursor IDE |
+| **Plugins, rules, skills, MCPs** | user-rag-knowledge-base MCP (`ask_question`, `find_relevant_docs`), log-agent-prompts |
+| **Context** | `sample_docs/code/deepagents/README.md` |
+| **Mode** | agent |
+| **Model** | auto |
+
+## Текст промпта
+
+```
+ask_question найди пример быстрого запуска агента
+```
+
+## Результат
+
+```
+ask_question (RU): ошибка Ollama 500 (model runner stopped). ask_question (EN): частичный ответ — только npm install. find_relevant_docs нашёл полный Quickstart в README.md: createDeepAgent() + agent.invoke с сообщением про LangGraph/summary.md. Источник: sample_docs/code/deepagents/README.md.
+```
+
+---
+
+# Промпт 09
+
+## Параметры
+
+| Параметр | Значение |
+| ----- | ----- |
+| **Agent** | Cursor IDE |
+| **Plugins, rules, skills, MCPs** | sync-docs-and-plans, log-agent-prompts, respect-gitignore |
+| **Context** | `sample_docs/book/`, `sample_docs/code`, `docs/implement_plan.md` |
+| **Mode** | agent |
+| **Model** | auto |
+
+## Текст промпта
+
+```
+Я обновил демо докумкенты для проверки (@sample_docs/book/ & @sample_docs\code) обнови шаги 12-13 из @docs/implement_plan.md . Проверь где использовались предыдущме сенерированные данные для тестирования и проверки и замени их на новые, старые необъодимо удалить
+```
+
+## Результат
+
+```
+Обновлены фазы 12–13 в docs/implement_plan.md под структуру book/ + code/deepagents/ (~1.9 МБ). README: проверочные факты из детективов (Майк Душнов, GrebSmart и др.) и deepagents (createDeepAgent, v1.10.3). Удалены старые Zephyr-файлы из sample_docs/ (overview.md, config.py, api.js и др.) и каталог scripts/. ARCHITECTURE.md §17 актуализирован. Автотесты (tests/integration/fixtures/) оставлены изолированными — покрывают 7 форматов без тяжёлой индексации sample_docs. pytest: 54 passed.
+```
+
+---
+
+# Промпт 10
+
+## Параметры
+
+| Параметр | Значение |
+| ----- | ----- |
+| **Agent** | Cursor IDE |
+| **Plugins, rules, skills, MCPs** | log-agent-prompts |
+| **Context** | terminal output `pip install -e ".[dev]"` |
+| **Mode** | agent |
+| **Model** | auto |
+
+## Текст промпта
+
+```
+@c:\Users\admin\.cursor\projects\c-git-otus-final-project\terminals\7.txt:10-14 
+```
+
+## Результат
+
+```
+Ошибка pip launcher: pip.exe ссылается на удалённый путь C:\Users\admin\AppData\Local\Programs\Python\Python314\, а Python установлен в C:\Python314\. Решение: python -m pip install -e ".[dev]" — установка прошла успешно. Опционально: переустановить pip (python -m pip install --upgrade pip) или удалить битый pip.exe из старого каталога.
+```
+
+---
+
+# Промпт 11
+
+## Параметры
+
+| Параметр | Значение |
+| ----- | ----- |
+| **Agent** | Cursor IDE |
+| **Plugins, rules, skills, MCPs** | log-agent-prompts |
+| **Context** | terminal output `pytest tests/` |
+| **Mode** | agent |
+| **Model** | auto |
+
+## Текст промпта
+
+```
+@c:\Users\admin\.cursor\projects\c-git-otus-final-project\terminals\7.txt:35-37 
+```
+
+## Результат
+
+```
+Та же проблема launcher: pytest.exe ссылается на удалённый Python. Решение: python -m pytest tests/ (54 passed). README обновлён: python -m pip / python -m pytest / python -m ruff вместо голых команд.
+```
+
+---

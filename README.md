@@ -5,12 +5,12 @@ MCP-сервер с Corrective RAG-пайплайном на LangGraph, гибр
 ## Быстрый старт
 
 ```bash
-git clone <repo> && cd final_project_2
+git clone <repo> && cd final_project
 docker compose up
 ```
 
 - MCP-сервер работает через stdio (подключение из IDE)
-- Log Viewer: http://localhost:8765 (последние 200 строк, SSE realtime)
+- Log Viewer: [http://localhost:8765](http://localhost:8765) (последние 200 строк, SSE realtime)
 
 ## Подключение MCP в VS Code Copilot
 
@@ -22,7 +22,7 @@ docker compose up
     "rag-knowledge-base": {
       "command": "python",
       "args": ["-m", "rag_mcp"],
-      "cwd": "/path/to/final_project_2"
+      "cwd": "/path/to/final_project"
     }
   }
 }
@@ -30,33 +30,39 @@ docker compose up
 
 ## MCP-инструменты
 
-| Инструмент | Описание |
-|---|---|
-| `index_folder(path, glob)` | Индексация документов в ChromaDB |
-| `ask_question(question)` | Вопрос с полным Corrective RAG (нужна Ollama) |
-| `find_relevant_docs(query, top_k)` | Гибридный поиск без генерации |
-| `index_status()` | Статистика индекса |
+
+| Инструмент                         | Описание                                      |
+| ---------------------------------- | --------------------------------------------- |
+| `index_folder(path, glob)`         | Индексация документов в ChromaDB              |
+| `ask_question(question)`           | Вопрос с полным Corrective RAG (нужна Ollama) |
+| `find_relevant_docs(query, top_k)` | Гибридный поиск без генерации                 |
+| `index_status()`                   | Статистика индекса                            |
+
 
 ## Пример использования
 
 1. `index_status()` — проверить, пуст ли индекс
-2. `index_folder("./sample_docs")` — проиндексировать демо-документы
-3. `ask_question("Какой кодовый номер проекта Zephyr?")` — получить ответ с источниками
-4. `find_relevant_docs("TOKEN_EXPIRY_HOURS")` — найти релевантные чанки
+2. `index_folder("./sample_docs/book")` и `index_folder("./sample_docs/code")` — проиндексировать демо-документы
+3. `ask_question("Кто главный герой детективов в sample_docs?")` — получить ответ с источниками
+4. `find_relevant_docs("createDeepAgent")` — найти релевантные чанки
 
 ## Проверочные факты
 
-Специфические факты из `sample_docs/` для проверки RAG:
+Специфические факты из `sample_docs/book/` и `sample_docs/code/` для проверки RAG (после индексации обоих каталогов):
+
 
 | Вопрос | Ожидаемый ответ | Источник |
-|---|---|---|
-| Какой кодовый номер проекта? | Zephyr-7742 | overview.md, config.py, settings.json |
-| Значение TOKEN_EXPIRY_HOURS? | 47 | config.py, api.js, types.ts |
-| Максимальное число повторов API? | 13 | notes.txt, settings.json |
-| Имя главного архитектора? | Dr. Elena Vostrikova | overview.md, deployment.yaml |
-| Дата назначения архитектора? | 2019-03-17 | settings.json, deployment.yaml |
-| Имя сервера? | atlas-node-881.internal.corp | notes.txt, config.py |
-| Размер пула соединений БД? | 17 | deployment.yaml, settings.json |
+| --- | --- | --- |
+| Кто главный герой детективов? | Майк Душнов | `book/teplyy_sloy.md`, `book/belyy_shum_u_pruda.txt` |
+| Где происходит первое дело? | Поместье «Солнечная поляна» (корпоратив NeuroFlow) | `book/teplyy_sloy.md` |
+| Кто CTO в «Тёплом слое»? | Павел Волков | `book/teplyy_sloy.md` |
+| Кличка маньяка во второй книге? | Смотритель пруда | `book/belyy_shum_u_pruda.txt` |
+| Компания-интегратор умного дома? | GrebSmart (владелец — Стас Гребнев) | `book/belyy_shum_u_pruda.txt` |
+| Название ЖК у Патриарших? | Резиденция Ледяной | `book/belyy_shum_u_pruda.txt` |
+| Как создать агента в deepagents? | `createDeepAgent()` | `code/deepagents/README.md` |
+| Версия npm-пакета deepagents? | 1.10.3 | `code/deepagents/package.json` |
+| Инструмент планирования в deepagents? | `write_todos` | `code/deepagents/README.md` |
+
 
 ## Конфигурация
 
@@ -69,9 +75,9 @@ docker compose up
 ## Разработка
 
 ```bash
-pip install -e ".[dev]"
-pytest tests/          # 54+ тестов
-ruff check src tests
+python -m pip install -e ".[dev]"
+python -m pytest tests/          # 54+ тестов
+python -m ruff check src tests
 python -m rag_mcp --help
 ```
 
@@ -79,3 +85,4 @@ python -m rag_mcp --help
 
 - [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) — архитектура
 - [REPORT.md](REPORT.md) — история разработки
+

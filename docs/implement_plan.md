@@ -201,12 +201,15 @@
 ## Фаза 12. Демо-документы и проверочные факты
 
 - [x] **12.1. Каталог `sample_docs/` (≥ 500 КБ)**
-  - Документы всех обязательных форматов; необычные проверочные факты (числа, имена, даты).
-  - **Проверка:** `du -sh sample_docs/` ≥ 500K; файлы всех 7 расширений присутствуют.
+  - `book/` — два детективных романа про Майка Душнова: `teplyy_sloy.md` (~255 КБ), `belyy_shum_u_pruda.txt` (~255 КБ).
+  - `code/deepagents/` — исходники TypeScript-библиотеки [deepagents](https://github.com/langchain-ai/deepagentsjs) (~114 файлов, ~2 МБ): `.ts`, `.js`, `.json`, `.yaml`, `.md`.
+  - Необычные проверочные факты: имена персонажей, названия компаний/локаций, версия пакета, API (`createDeepAgent`).
+  - Формат `.py` в демо-корпусе не представлен; покрытие — `tests/integration/fixtures/sample.py`.
+  - **Проверка:** `du -sh sample_docs/` ≥ 500K (фактически ~1.9 МБ); расширения `.md`, `.txt`, `.ts`, `.js`, `.json`, `.yaml` присутствуют; старые сгенерированные файлы Zephyr в корне `sample_docs/` удалены.
 
 - [x] **12.2. Проверочные факты в README**
-  - Список фактов для проверки RAG (шаг 5 сдачи).
-  - **Проверка:** `ask_question` по каждому факту возвращает правильное значение + source из sample_docs.
+  - Список фактов из `book/` и `code/deepagents/` для проверки RAG (шаг 5 сдачи).
+  - **Проверка:** `index_folder("./sample_docs/book")` + `index_folder("./sample_docs/code")`; `ask_question` / `find_relevant_docs` по каждому факту возвращают правильное значение + source из `sample_docs/book/` или `sample_docs/code/`.
 
 ---
 
@@ -217,11 +220,12 @@
   - **Проверка:** `pytest tests/unit/` — все green.
 
 - [x] **13.2. Integration-тесты**
-  - Индексер + ChromaDB; hybrid retriever на тестовом корпусе.
+  - Индексер + ChromaDB; hybrid retriever на минимальном корпусе `tests/integration/fixtures/` (7 форматов, изолированные факты — не `sample_docs/`).
   - **Проверка:** `pytest tests/integration/` — все green.
 
 - [x] **13.3. E2E тесты MCP**
-  - 4 инструмента: пустой index_status → index_folder → index_status → ask_question → find_relevant_docs.
+  - 4 инструмента: пустой index_status → `index_folder(fixtures)` → index_status → ask_question → find_relevant_docs.
+  - Сценарий сдачи с демо-документами — вручную через MCP: `index_folder("./sample_docs/book")`, `index_folder("./sample_docs/code")`, проверочные факты из README.
   - **Проверка:** `pytest tests/e2e/` — все green; общее число тестов ≥ 10.
 
 ---
@@ -286,7 +290,7 @@ flowchart LR
 
 - [ ] `docker compose up` поднимает сервер + Ollama + модели
 - [ ] Агент в IDE сам выбирает MCP-инструменты по description
-- [ ] `index_status()` → пустой → `index_folder("./sample_docs")` → статистика
+- [ ] `index_status()` → пустой → `index_folder("./sample_docs/book")` + `index_folder("./sample_docs/code")` → статистика
 - [ ] `ask_question(...)` → ответ с источниками и проверочными фактами
 - [ ] `find_relevant_docs(...)` → ранжированные чанки
 - [ ] CI: lint + тесты green
