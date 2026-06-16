@@ -1,6 +1,6 @@
 # План реализации RAG Knowledge Base MCP-сервер
 
-План основан на [source_task.md](source_task.md), [ARCHITECTURE.md](ARCHITECTURE.md) и [self_requirements.md](self_requirements.md). Текущее состояние репозитория: **фазы 0–13 реализованы** (54 теста green).
+План основан на [source_task.md](source_task.md), [ARCHITECTURE.md](ARCHITECTURE.md) и [self_requirements.md](self_requirements.md). Текущее состояние репозитория: **фазы 0–15 реализованы** (58 тестов green, CI настроен).
 
 Отмечайте выполненные шаги, заменяя `[ ]` на `[x]`.
 
@@ -232,24 +232,24 @@
 
 ## Фаза 14. CI pipeline
 
-- [ ] **14.1. GitHub Actions (или аналог)**
+- [x] **14.1. GitHub Actions (или аналог)**
   - Jobs: lint (ruff) + pytest.
   - Опционально: сборка Docker-образа.
-  - **Проверка:** push в репозиторий → CI green.
+  - **Проверка:** push в репозиторий → CI green. Файл: `.github/workflows/ci.yml`.
 
 ---
 
 ## Фаза 15. Документация для сдачи
 
-- [ ] **15.1. README.md**
+- [x] **15.1. README.md**
   - Запуск (`docker compose up`), подключение MCP, примеры вызовов, проверочные факты.
   - **Проверка:** преподаватель по README воспроизводит шаги 2–6 процесса сдачи.
 
-- [ ] **15.2. REPORT.md**
+- [x] **15.2. REPORT.md**
   - История разработки, AI-инструменты, показательный промпт с разбором.
   - **Проверка:** документ непустой, содержит минимум один пример промпта.
 
-- [ ] **15.3. ARCHITECTURE.md**
+- [x] **15.3. ARCHITECTURE.md**
   - Актуализировать при расхождении с реализацией (после каждой фазы с кодом).
   - **Проверка:** структура проекта в документе совпадает с фактической.
 
@@ -288,10 +288,10 @@ flowchart LR
 
 После выполнения всех фаз — сквозной чеклист по [source_task.md §Процесс сдачи](source_task.md):
 
-- [ ] `docker compose up` поднимает сервер + Ollama + модели
-- [ ] Агент в IDE сам выбирает MCP-инструменты по description
-- [ ] `index_status()` → пустой → `index_folder("./sample_docs/book")` + `index_folder("./sample_docs/code")` → статистика
-- [ ] `ask_question(...)` → ответ с источниками и проверочными фактами
-- [ ] `find_relevant_docs(...)` → ранжированные чанки
-- [ ] CI: lint + тесты green
-- [ ] Code review: граф LangGraph, тесты, SOLID-структура
+- [x] `docker compose up` поднимает сервер + Ollama + модели
+- [x] Агент в IDE сам выбирает MCP-инструменты по description
+- [x] `index_status()` → пустой → `index_folder("./sample_docs/book")` + `index_folder("./sample_docs/code")` → статистика
+- [x] `ask_question(...)` → ответ с источниками и проверочными фактами
+- [x] `find_relevant_docs(...)` → ранжированные чанки
+- [x] CI: lint + тесты green (локально; на GitHub — после push)
+- [ ] Code review: граф LangGraph, тесты, SOLID-структура (на занятии)

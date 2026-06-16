@@ -542,12 +542,25 @@ flowchart LR
 
 ---
 
-## 17. Статус реализации
+## 17. CI/CD
+
+GitHub Actions workflow [`.github/workflows/ci.yml`](../.github/workflows/ci.yml):
+
+| Job | Шаги |
+| --- | --- |
+| `lint-and-test` | Python 3.12 → `pip install -e ".[dev]"` → `ruff check src tests` → `pytest tests/` |
+| `docker-build` | `docker build -t rag-mcp-server:ci .` |
+
+Триггеры: `push` и `pull_request` на ветки `main` / `master`. Тесты не требуют запущенного Ollama (mock LLM в unit/e2e).
+
+---
+
+## 18. Статус реализации
 
 | Фаза | Статус |
 | --- | --- |
-| 0–13 | Реализовано (2026-06-15): каркас, домен, логи, загрузчики, ChromaDB, retrieval, сервисы, LangGraph, MCP, Log Viewer, Docker-файлы, sample_docs (`book/` + `code/deepagents/`, ~1.9 МБ), 54 теста |
-| 14 | CI pipeline — не реализован |
-| 15 | README/REPORT частично; ARCHITECTURE актуализирован |
+| 0–13 | Реализовано: каркас, домен, логи, загрузчики, ChromaDB, retrieval, сервисы, LangGraph, MCP, Log Viewer, Docker, sample_docs (~1.9 МБ), 58 тестов |
+| 14 | CI pipeline — GitHub Actions (ruff + pytest + docker build) |
+| 15 | README (сценарий сдачи), REPORT, ARCHITECTURE актуализированы |
 
 Ключевые файлы соответствуют структуре из §2. `Settings` использует `populate_by_name=True` для корректной инициализации путей в тестах и DI.

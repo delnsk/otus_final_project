@@ -304,3 +304,29 @@ ask_question (RU): ошибка Ollama 500 (model runner stopped). ask_question 
 ```
 
 ---
+
+# Промпт 12
+
+## Параметры
+
+| Параметр | Значение |
+| ----- | ----- |
+| **Agent** | Cursor IDE |
+| **Plugins, rules, skills, MCPs** | sync-docs-and-plans, log-agent-prompts, respect-gitignore |
+| **Context** | docs/implement_plan.md |
+| **Mode** | agent |
+| **Model** | auto |
+
+## Текст промпта
+
+```
+выполни шаги 14-15 из @docs/implement_plan.md , если необходимы уточнения задай вопорсы
+```
+
+## Результат
+
+```
+Фаза 14: создан .github/workflows/ci.yml — jobs lint-and-test (ruff + pytest на Python 3.12) и docker-build. Фаза 15: расширены README.md (сценарий сдачи, MCP-конфиги Docker/локально), REPORT.md (история, удачный/неудачный промпт, проблемы), ARCHITECTURE.md §17 CI/CD и §18 статус. implement_plan.md — фазы 14–15 отмечены выполненными. Локально: ruff green, 58 passed.
+```
+
+---
