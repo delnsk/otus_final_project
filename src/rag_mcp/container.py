@@ -5,6 +5,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 
 from rag_mcp.application.ask_service import AskService
+from rag_mcp.application.clear_index_service import ClearIndexService
 from rag_mcp.application.index_service import IndexService
 from rag_mcp.application.search_service import SearchService
 from rag_mcp.application.status_service import StatusService
@@ -32,6 +33,7 @@ class Services:
     ask_service: AskService
     search_service: SearchService
     status_service: StatusService
+    clear_index_service: ClearIndexService
     mcp_server: object
     log_viewer: LogViewer
     logger: object
@@ -77,10 +79,18 @@ class Container:
         )
         search_service = SearchService(hybrid_retriever, settings)
         status_service = StatusService(vector_store)
+        clear_index_service = ClearIndexService(
+            vector_store, hybrid_retriever, pipeline_logger,
+        )
 
         middleware = MCPLoggingMiddleware(logger)
         mcp_tools = MCPTools(
-            index_service, ask_service, search_service, status_service, middleware,
+            index_service,
+            ask_service,
+            search_service,
+            status_service,
+            clear_index_service,
+            middleware,
         )
         mcp_server = create_mcp_server(mcp_tools)
         log_viewer = LogViewer(settings)
@@ -91,6 +101,7 @@ class Container:
             ask_service=ask_service,
             search_service=search_service,
             status_service=status_service,
+            clear_index_service=clear_index_service,
             mcp_server=mcp_server,
             log_viewer=log_viewer,
             logger=logger,

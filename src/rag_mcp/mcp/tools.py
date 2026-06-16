@@ -5,6 +5,7 @@ from __future__ import annotations
 from typing import Annotated, Any
 
 from rag_mcp.application.ask_service import AskService
+from rag_mcp.application.clear_index_service import ClearIndexService
 from rag_mcp.application.index_service import IndexService
 from rag_mcp.application.search_service import SearchService
 from rag_mcp.application.status_service import StatusService
@@ -18,12 +19,14 @@ class MCPTools:
         ask_service: AskService,
         search_service: SearchService,
         status_service: StatusService,
+        clear_index_service: ClearIndexService,
         middleware: MCPLoggingMiddleware,
     ) -> None:
         self._index = index_service
         self._ask = ask_service
         self._search = search_service
         self._status = status_service
+        self._clear = clear_index_service
         self._middleware = middleware
 
     async def index_folder(self, path: str, glob: str = "**/*") -> dict[str, Any]:
@@ -52,6 +55,13 @@ class MCPTools:
     async def index_status(self) -> dict[str, Any]:
         stats = await self._status.get_status()
         return stats.to_dict()
+
+    async def clear_index(self) -> dict[str, Any]:
+        try:
+            stats = await self._clear.clear_index()
+            return stats.to_dict()
+        except Exception as exc:
+            return {"error": str(exc), "file_count": 0, "chunk_count": 0}
 
     def register(self, mcp: Any) -> None:
         @mcp.tool(
@@ -135,4 +145,16 @@ class MCPTools:
             fn = with_logging(self._middleware, "index_status", self.index_status)
             return await fn()
 
-        self._middleware.log_list_tools(4)
+        @mcp.tool(
+            description=(
+                "Remove all indexed documents from the knowledge base. "
+                "Deletes every chunk from ChromaDB and resets the in-memory BM25 index. "
+                "Use when you need a fresh start before re-indexing, or to free storage. "
+                "Does not delete source files on disk — only the search index."
+            )
+        )
+        async def clear_index() -> dict:
+            fn = with_logging(self._middleware, "clear_index", self.clear_index)
+            return await fn()
+
+        self._middleware.log_list_tools(5)

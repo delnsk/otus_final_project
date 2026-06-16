@@ -60,3 +60,6 @@ class PipelineLogger:
 
     def log_index_store(self, chunk_count: int) -> None:
         self._log("index_store", chunk_count=chunk_count)
+
+    def log_index_clear(self, file_count: int, chunk_count: int) -> None:
+        self._log("index_clear", file_count=file_count, chunk_count=chunk_count)

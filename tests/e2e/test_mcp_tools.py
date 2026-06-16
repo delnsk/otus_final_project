@@ -23,6 +23,7 @@ def tools(tmp_path):
         services.ask_service,
         services.search_service,
         services.status_service,
+        services.clear_index_service,
         middleware,
     )
     return mcp_tools, fixtures
@@ -84,6 +85,34 @@ async def test_ask_question_empty_index(tools):
     mcp_tools, _ = tools
     result = await mcp_tools.ask_question("What is TOKEN_EXPIRY_HOURS?")
     assert "error" in result
+
+
+@pytest.mark.asyncio
+async def test_clear_index(tools):
+    mcp_tools, fixtures = tools
+    await mcp_tools.index_folder(fixtures, "*")
+    status_before = await mcp_tools.index_status()
+    assert status_before["chunk_count"] > 0
+
+    result = await mcp_tools.clear_index()
+    assert result["chunk_count"] == 0
+    assert result["file_count"] == 0
+    assert result.get("last_indexed_at") is None
+
+    status_after = await mcp_tools.index_status()
+    assert status_after["chunk_count"] == 0
+
+    search = await mcp_tools.find_relevant_docs("TOKEN_EXPIRY_HOURS", top_k=3)
+    assert search == [] or (len(search) == 1 and "error" in search[0])
+
+
+@pytest.mark.asyncio
+async def test_clear_index_empty(tools):
+    mcp_tools, _ = tools
+    result = await mcp_tools.clear_index()
+    assert result["chunk_count"] == 0
+    assert result["file_count"] == 0
+    assert "error" not in result
 
 
 @pytest.mark.asyncio

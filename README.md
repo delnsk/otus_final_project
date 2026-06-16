@@ -71,7 +71,7 @@ docker compose up
 }
 ```
 
-2. Перезапустите MCP в IDE — агент должен увидеть 4 инструмента с содержательными `description`.
+2. Перезапустите MCP в IDE — агент должен увидеть 5 инструментов с содержательными `description`.
 
 ## MCP-инструменты
 
@@ -81,6 +81,7 @@ docker compose up
 | `ask_question(question)` | Вопрос с полным Corrective RAG (нужна Ollama) |
 | `find_relevant_docs(query, top_k)` | Гибридный поиск без генерации |
 | `index_status()` | Статистика индекса |
+| `clear_index()` | Полная очистка индекса (ChromaDB + BM25); файлы на диске не удаляются |
 
 ## Сценарий проверки (процесс сдачи)
 
