@@ -1,0 +1,22 @@
+{
+  "mcpServers": {
+    "rag-knowledge-base": {
+      "command": "docker",
+      "args": [
+        "compose",
+        "-f",
+        "${workspaceFolder}/docker-compose.yml",
+        "run",
+        "--rm",
+        "-T",
+        "rag-mcp-server",
+        "python",
+        "-m",
+        "rag_mcp"
+      ],
+      "env": {
+        "OLLAMA_BASE_URL": "http://host.docker.internal:11434"
+      }
+    }
+  }
+}

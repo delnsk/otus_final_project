@@ -1,0 +1,4 @@
+Sample text document for RAG testing.
+
+The maximum retry count for API calls is 13 attempts.
+Server hostname: atlas-node-881.internal.corp

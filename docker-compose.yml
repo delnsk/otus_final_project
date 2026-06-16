@@ -1,0 +1,60 @@
+services:
+  ollama:
+    image: ollama/ollama:latest
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama_models:/root/.ollama
+    healthcheck:
+      test: ["CMD", "ollama", "list"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+
+  model-init:
+    image: ollama/ollama:latest
+    depends_on:
+      ollama:
+        condition: service_healthy
+    volumes:
+      - ollama_models:/root/.ollama
+    entrypoint: >
+      /bin/sh -c "
+      ollama pull phi3:mini &&
+      ollama pull nomic-embed-text &&
+      echo 'Models ready'
+      "
+    environment:
+      OLLAMA_HOST: http://ollama:11434
+
+  rag-mcp-server:
+    build: .
+    depends_on:
+      ollama:
+        condition: service_healthy
+      model-init:
+        condition: service_completed_successfully
+    environment:
+      OLLAMA_BASE_URL: http://ollama:11434
+      LLM_MODEL: phi3:mini
+      EMBEDDING_PROVIDER: ollama
+      EMBEDDING_MODEL: nomic-embed-text
+      CHROMA_PATH: /data/chroma
+      LOG_DIR: /data/logs
+      LOG_VIEWER_PORT: 8765
+      PYTHONPATH: /app/src
+    volumes:
+      - chroma_data:/data/chroma
+      - logs_data:/data/logs
+      - ./sample_docs:/app/sample_docs:ro
+      - ./src:/app/src:ro
+    ports:
+      - "8765:8765"
+    stdin_open: true
+    tty: true
+
+volumes:
+  ollama_models:
+  chroma_data:
+  logs_data:

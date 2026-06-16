@@ -123,3 +123,28 @@
 ```
 
 ---
+# Промпт 05
+
+## Параметры
+
+| Параметр | Значение |
+| ----- | ----- |
+| **Agent** | Cursor IDE |
+| **Plugins, rules, skills, MCPs** | sync-docs-and-plans, log-agent-prompts, respect-gitignore, user-context7 MCP |
+| **Context** | `docs/implement_plan.md`, `docs/ARCHITECTURE.md` |
+| **Mode** | agent |
+| **Model** | auto |
+
+## Текст промпта
+
+```
+Выполни шаг за шагом пункты 1-13. После каждого шага выполни обязательную проверку что все корректно, если есть ошибки то перед переходом к следующему шагу их необходимо исправить. Так же после успешного выполнения необходимо отметить в плане что пункт задания выполнен, если в ходе выполнения возникнет какая то проблема то приостанови выполнение плана и опиши проблему
+```
+
+## Результат
+
+```
+Реализованы фазы 0–13: полный каркас RAG MCP-сервера (config, DI, домен, логи, загрузчики/чанкеры, ChromaDB, hybrid retrieval, сервисы, LangGraph Corrective RAG, FastMCP с 4 инструментами, Log Viewer SSE, Docker Compose, sample_docs 558 КБ, 54 теста green). Исправлены баги: populate_by_name в Settings, сериализация YAML-дат в чанкере, логирование в файл. docker build не проверен — Docker daemon недоступен на машине. Обновлены docs/implement_plan.md (фазы 0–13 [x]), docs/ARCHITECTURE.md §17, README.md, REPORT.md, docs/prompts.md.
+```
+
+---
