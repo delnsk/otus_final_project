@@ -36,3 +36,7 @@ class HybridRetriever:
 
     async def rebuild_index(self, chunks: list[Chunk]) -> None:
         await self._bm25.rebuild_index(chunks)
+
+    def hydrate(self, chunks: list[Chunk]) -> None:
+        """Sync rebuild of BM25 from persisted chunks (used at container startup)."""
+        self._bm25.rebuild_index_sync(chunks)

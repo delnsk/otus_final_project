@@ -20,8 +20,6 @@ class ChromaVectorStore:
             name="rag_documents",
             metadata={"hnsw:space": "cosine"},
         )
-        self._last_indexed_at: datetime | None = None
-        self._file_sources: set[str] = set()
 
     async def add(self, chunks: list[Chunk], embeddings: list[list[float]]) -> None:
         await asyncio.to_thread(self._add_sync, chunks, embeddings)
@@ -45,9 +43,7 @@ class ChromaVectorStore:
             documents=documents,
             metadatas=metadatas,
         )
-        for c in chunks:
-            self._file_sources.add(c.source)
-        self._last_indexed_at = datetime.now(timezone.utc)
+        self._touch_last_indexed_at(datetime.now(timezone.utc))
 
     async def search(self, query_embedding: list[float], top_k: int) -> list[Chunk]:
         return await asyncio.to_thread(self._search_sync, query_embedding, top_k)
@@ -89,19 +85,36 @@ class ChromaVectorStore:
             name="rag_documents",
             metadata={"hnsw:space": "cosine"},
         )
-        self._file_sources.clear()
-        self._last_indexed_at = None
 
     async def get_stats(self) -> IndexStats:
         return await asyncio.to_thread(self._get_stats_sync)
 
     def _get_stats_sync(self) -> IndexStats:
         count = self._collection.count()
+        file_count = 0
+        if count > 0:
+            results = self._collection.get(include=["metadatas"])
+            sources = {
+                meta.get("source", "")
+                for meta in results.get("metadatas", [])
+                if meta.get("source")
+            }
+            file_count = len(sources)
         return IndexStats(
-            file_count=len(self._file_sources),
+            file_count=file_count,
             chunk_count=count,
-            last_indexed_at=self._last_indexed_at,
+            last_indexed_at=self._read_last_indexed_at(),
         )
+
+    def _touch_last_indexed_at(self, moment: datetime) -> None:
+        # Chroma rejects modify payloads that include hnsw:space on existing collections.
+        self._collection.modify(metadata={"last_indexed_at": moment.isoformat()})
+
+    def _read_last_indexed_at(self) -> datetime | None:
+        raw = (self._collection.metadata or {}).get("last_indexed_at")
+        if not raw:
+            return None
+        return datetime.fromisoformat(raw)
 
     def get_all_chunks(self) -> list[Chunk]:
         if self._collection.count() == 0:

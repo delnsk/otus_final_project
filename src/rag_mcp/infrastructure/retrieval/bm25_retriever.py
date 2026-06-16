@@ -22,6 +22,9 @@ class BM25Retriever:
     async def rebuild_index(self, chunks: list[Chunk]) -> None:
         await asyncio.to_thread(self._rebuild_sync, chunks)
 
+    def rebuild_index_sync(self, chunks: list[Chunk]) -> None:
+        self._rebuild_sync(chunks)
+
     def _rebuild_sync(self, chunks: list[Chunk]) -> None:
         self._chunks = list(chunks)
         if not chunks:

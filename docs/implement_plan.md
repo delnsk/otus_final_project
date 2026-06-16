@@ -1,6 +1,6 @@
 # План реализации RAG Knowledge Base MCP-сервер
 
-План основан на [source_task.md](source_task.md), [ARCHITECTURE.md](ARCHITECTURE.md) и [self_requirements.md](self_requirements.md). Текущее состояние репозитория: **фазы 0–15 реализованы** (58 тестов green, CI настроен).
+План основан на [source_task.md](source_task.md), [ARCHITECTURE.md](ARCHITECTURE.md) и [self_requirements.md](self_requirements.md). Текущее состояние репозитория: **фазы 0–15 реализованы** (61 тест green, CI настроен).
 
 Отмечайте выполненные шаги, заменяя `[ ]` на `[x]`.
 

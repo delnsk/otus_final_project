@@ -65,7 +65,8 @@ class IndexService:
             self._pipeline_logger.log_index_embed(len(all_chunks))
             await self._vector_store.add(all_chunks, embeddings)
             self._pipeline_logger.log_index_store(len(all_chunks))
-            await self._retriever.rebuild_index(all_chunks)
+            all_in_store = self._vector_store.get_all_chunks()
+            await self._retriever.rebuild_index(all_in_store)
 
         stats = await self._vector_store.get_stats()
         stats.errors = errors

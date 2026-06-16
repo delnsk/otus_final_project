@@ -330,3 +330,56 @@ ask_question (RU): ошибка Ollama 500 (model runner stopped). ask_question 
 ```
 
 ---
+
+# Промпт 13
+
+## Параметры
+
+| Параметр | Значение |
+| ----- | ----- |
+| **Agent** | Cursor IDE |
+| **Plugins, rules, skills, MCPs** | log-agent-prompts, respect-gitignore |
+| **Context** | docs/prompts.md (промпт 06 — индексация book+code), ARCHITECTURE.md |
+| **Mode** | agent |
+| **Model** | auto |
+
+## Текст промпта
+
+```
+проанализируй теоретичксукю ошибку, выдай варианты решения:
+- после ручной проверки, при перезапуске часть индексов терялась.  частично проиндексирована — в векторном хранилище ChromaDB она есть, но в index_status не отображается, а из BM25 выпала. 
+```
+
+## Результат
+
+```
+Корневая причина: три несинхронизированных слоя состояния — ChromaDB (персистентный), BM25 и метаданные index_status (_file_sources, _last_indexed_at) — только в RAM. При перезапуске MCP (docker compose run --rm) Chroma сохраняется, BM25 и file_count обнуляются; rebuild_index при index_folder заменяет BM25 только чанками текущей папки. Варианты решения: (1) гидратация при старте из Chroma, (2) rebuild BM25 из get_all_chunks после каждого add, (3) персист BM25, (4) manifest/metadata в Chroma, (5) единая операция полной переиндексации, (6) long-running сервис вместо run --rm.
+```
+
+---
+
+# Промпт 14
+
+## Параметры
+
+| Параметр | Значение |
+| ----- | ----- |
+| **Agent** | Cursor IDE |
+| **Plugins, rules, skills, MCPs** | sync-docs-and-plans, log-agent-prompts |
+| **Context** | анализ рассинхрона Chroma/BM25/index_status (промпт 13) |
+| **Mode** | agent |
+| **Model** | auto |
+
+## Текст промпта
+
+```
+Да, реализуй P0+P1 с тестом на сценарий перезапуска, после этого если необходимо обнови документацию
+```
+
+## Результат
+
+```
+P0+P1: гидратация BM25 при старте Container; rebuild BM25 из get_all_chunks() после add; index_status (file_count, last_indexed_at) из Chroma metadata. Тесты tests/integration/test_index_restart.py (multi-folder + restart). 61 passed. Обновлены ARCHITECTURE.md, implement_plan.md.
+```
+
+---

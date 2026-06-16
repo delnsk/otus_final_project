@@ -62,6 +62,10 @@ class Container:
         bm25 = BM25Retriever()
         vector_retriever = VectorRetriever(vector_store, embeddings)
         hybrid_retriever = HybridRetriever(bm25, vector_retriever, settings)
+        persisted_chunks = vector_store.get_all_chunks()
+        if persisted_chunks:
+            hybrid_retriever.hydrate(persisted_chunks)
+
         llm = OllamaLLM(settings)
 
         index_service = IndexService(
