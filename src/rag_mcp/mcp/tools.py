@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from typing import Any
+from typing import Annotated, Any
 
 from rag_mcp.application.ask_service import AskService
 from rag_mcp.application.index_service import IndexService
@@ -63,7 +63,20 @@ class MCPTools:
                 "Supports .md, .txt, .py, .js, .ts, .json, .yaml files."
             )
         )
-        async def index_folder(path: str, glob: str = "**/*") -> dict:
+        async def index_folder(
+            path: Annotated[
+                str,
+                "Absolute or relative path to the local folder with documents to index "
+                "(e.g. './sample_docs/book').",
+            ],
+            glob: Annotated[
+                str,
+                (
+                    "Glob pattern for selecting files within the folder "
+                    "(e.g. '**/*' for all files recursively, '*.md' for markdown only)."
+                ),
+            ] = "**/*",
+        ) -> dict:
             fn = with_logging(self._middleware, "index_folder", self.index_folder)
             return await fn(path=path, glob=glob)
 
@@ -77,7 +90,12 @@ class MCPTools:
                 "Uses local LLM via Ollama."
             )
         )
-        async def ask_question(question: str) -> dict:
+        async def ask_question(
+            question: Annotated[
+                str,
+                "Natural language question about documents already indexed in the knowledge base.",
+            ],
+        ) -> dict:
             fn = with_logging(self._middleware, "ask_question", self.ask_question)
             return await fn(question=question)
 
@@ -90,7 +108,16 @@ class MCPTools:
                 "Use for exploring what documents match a query."
             )
         )
-        async def find_relevant_docs(query: str, top_k: int = 5) -> list:
+        async def find_relevant_docs(
+            query: Annotated[
+                str,
+                "Search query to find matching document chunks via hybrid BM25 + vector retrieval.",
+            ],
+            top_k: Annotated[
+                int,
+                "Maximum number of top-ranked chunks to return (default: 5).",
+            ] = 5,
+        ) -> list:
             fn = with_logging(
                 self._middleware, "find_relevant_docs", self.find_relevant_docs
             )

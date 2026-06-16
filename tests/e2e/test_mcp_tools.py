@@ -5,6 +5,7 @@ import pytest
 from rag_mcp.config import Settings
 from rag_mcp.container import Container
 from rag_mcp.mcp.middleware import MCPLoggingMiddleware
+from rag_mcp.mcp.server import create_mcp_server
 from rag_mcp.mcp.tools import MCPTools
 
 
@@ -25,6 +26,25 @@ def tools(tmp_path):
         middleware,
     )
     return mcp_tools, fixtures
+
+
+@pytest.mark.asyncio
+async def test_mcp_tool_parameter_descriptions(tools):
+    mcp_tools, _ = tools
+    mcp = create_mcp_server(mcp_tools)
+    registered = await mcp.get_tools()
+
+    expected = {
+        "index_folder": ("path", "glob"),
+        "ask_question": ("question",),
+        "find_relevant_docs": ("query", "top_k"),
+    }
+    for tool_name, param_names in expected.items():
+        schema = registered[tool_name].parameters
+        props = schema["properties"]
+        for param in param_names:
+            assert param in props, f"{tool_name}: missing parameter {param}"
+            assert props[param].get("description"), f"{tool_name}.{param}: missing description"
 
 
 @pytest.mark.asyncio
