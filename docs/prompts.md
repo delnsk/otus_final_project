@@ -710,3 +710,33 @@ Found 3 errors.
 ```
 
 ---
+
+# Промпт 26
+
+## Параметры
+
+| Параметр | Значение |
+| ----- | ----- |
+| **Agent** | Cursor IDE |
+| **Plugins, rules, skills, MCPs** | log-agent-prompts, respect-gitignore |
+| **Context** | tests/e2e/test_mcp_tools.py |
+| **Mode** | agent |
+| **Model** | auto |
+
+## Текст промпта
+
+```
+Run python -m pytest tests/ -q
+F....................................................................... [ 94%]
+...
+FAILED tests/e2e/test_mcp_tools.py::test_mcp_tool_parameter_descriptions - AttributeError: 'FastMCP' object has no attribute 'get_tools'. Did you mean: 'get_tool'?
+1 failed, 75 passed in 17.69s
+```
+
+## Результат
+
+```
+Исправлен test_mcp_tool_parameter_descriptions: вместо удалённого в fastmcp 3.x get_tools() используется get_tool(tool_name) для каждого инструмента. Тест проходит на fastmcp 2.14.7 и 3.0.0.
+```
+
+---

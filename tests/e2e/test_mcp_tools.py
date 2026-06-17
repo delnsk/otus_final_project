@@ -33,7 +33,6 @@ def tools(tmp_path):
 async def test_mcp_tool_parameter_descriptions(tools):
     mcp_tools, _ = tools
     mcp = create_mcp_server(mcp_tools)
-    registered = await mcp.get_tools()
 
     expected = {
         "index_folder": ("path", "glob"),
@@ -41,7 +40,8 @@ async def test_mcp_tool_parameter_descriptions(tools):
         "find_relevant_docs": ("query", "top_k"),
     }
     for tool_name, param_names in expected.items():
-        schema = registered[tool_name].parameters
+        tool = await mcp.get_tool(tool_name)
+        schema = tool.parameters
         props = schema["properties"]
         for param in param_names:
             assert param in props, f"{tool_name}: missing parameter {param}"
