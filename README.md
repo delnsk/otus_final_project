@@ -178,7 +178,7 @@ find_relevant_docs("Майк Душнов", 5)
 
 ```bash
 python -m pip install -e ".[dev]"
-python -m pytest tests/          # 58 тестов
+python -m pytest tests/          # 76 тестов
 python -m ruff check src tests
 python -m rag_mcp --help
 ```
@@ -187,6 +187,6 @@ CI (GitHub Actions): lint (`ruff`) + `pytest` + сборка Docker-образа
 
 ## Документация
 
-- [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) — архитектура, граф LangGraph, SOLID-структура
+- [ARCHITECTURE.md](ARCHITECTURE.md) — обзор архитектуры (полная версия: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md))
 - [REPORT.md](REPORT.md) — история разработки, AI-инструменты, промпты
 - [docs/implement_plan.md](docs/implement_plan.md) — пошаговый план реализации

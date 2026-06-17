@@ -1,5 +1,8 @@
 # Архитектура: RAG Knowledge Base MCP-сервер
 
+Краткий обзор для сдачи — в корневом [`ARCHITECTURE.md`](../ARCHITECTURE.md).
+Ниже — полная версия документа.
+
 Документ описывает архитектуру системы к реализации. Источники требований:
 [source_task.md](source_task.md) (исходное задание) и
 [self_requirements.md](self_requirements.md) (дополнительные требования).
