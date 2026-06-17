@@ -8,18 +8,9 @@ from rag_mcp.config import Settings
 from rag_mcp.domain.graph.edges import decide_next_step
 from rag_mcp.domain.graph.nodes import GraphNodes
 from rag_mcp.domain.graph.state import RAGState
-from rag_mcp.domain.ports import LLMPort, RetrieverPort
-from rag_mcp.logging.pipeline_logger import PipelineLogger
 
 
-def build_rag_graph(
-    llm: LLMPort,
-    retriever: RetrieverPort,
-    settings: Settings,
-    pipeline_logger: PipelineLogger,
-):
-    nodes = GraphNodes(llm, retriever, settings, pipeline_logger)
-
+def build_rag_graph(nodes: GraphNodes, settings: Settings):
     graph = StateGraph(RAGState)
     graph.add_node("rewrite", nodes.rewrite_query)
     graph.add_node("retrieve", nodes.retrieve)

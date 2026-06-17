@@ -77,7 +77,7 @@ class Container:
         ask_service = AskService(
             llm, hybrid_retriever, vector_store, settings, pipeline_logger,
         )
-        search_service = SearchService(hybrid_retriever, settings)
+        search_service = SearchService(hybrid_retriever, settings, pipeline_logger)
         status_service = StatusService(vector_store)
         clear_index_service = ClearIndexService(
             vector_store, hybrid_retriever, pipeline_logger,

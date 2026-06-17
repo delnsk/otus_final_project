@@ -111,10 +111,12 @@ async def test_generate_node(settings):
 @pytest.mark.asyncio
 async def test_graph_e2e_with_mock(settings):
     from rag_mcp.domain.graph.builder import build_rag_graph
+    from rag_mcp.domain.graph.nodes import GraphNodes
 
     logger = __import__("logging").getLogger("test")
     pl = PipelineLogger(logger)
-    graph = build_rag_graph(MockLLMYes(), MockRetrieverWithChunks(), settings, pl)
+    nodes = GraphNodes(MockLLMYes(), MockRetrieverWithChunks(), settings, pl)
+    graph = build_rag_graph(nodes, settings)
     result = await graph.ainvoke({
         "question": "How does authentication work?",
         "query": "",

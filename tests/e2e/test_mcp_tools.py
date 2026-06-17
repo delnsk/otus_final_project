@@ -58,9 +58,15 @@ async def test_index_status_empty(tools):
 @pytest.mark.asyncio
 async def test_index_folder(tools):
     mcp_tools, fixtures = tools
-    result = await mcp_tools.index_folder(fixtures, "*")
+    updates: list[tuple[int, str]] = []
+
+    async def on_progress(percent: int, message: str) -> None:
+        updates.append((percent, message))
+
+    result = await mcp_tools.index_folder(fixtures, "*", on_progress=on_progress)
     assert result["chunk_count"] > 0
     assert result["file_count"] >= 7
+    assert updates[-1][0] == 100
 
 
 @pytest.mark.asyncio
@@ -75,9 +81,18 @@ async def test_index_status_after_index(tools):
 async def test_find_relevant_docs(tools):
     mcp_tools, fixtures = tools
     await mcp_tools.index_folder(fixtures, "*")
-    results = await mcp_tools.find_relevant_docs("TOKEN_EXPIRY_HOURS", top_k=3)
+    updates: list[tuple[int, str]] = []
+
+    async def on_progress(percent: int, message: str) -> None:
+        updates.append((percent, message))
+
+    results = await mcp_tools.find_relevant_docs(
+        "TOKEN_EXPIRY_HOURS", top_k=3, on_progress=on_progress
+    )
     assert len(results) >= 1
     assert "error" not in results[0] or results[0].get("content")
+    assert updates[-1][0] == 100
+    assert any("BM25" in msg for _, msg in updates)
 
 
 @pytest.mark.asyncio

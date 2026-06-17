@@ -7,9 +7,11 @@ from typing import Annotated, Any
 from rag_mcp.application.ask_service import AskService
 from rag_mcp.application.clear_index_service import ClearIndexService
 from rag_mcp.application.index_service import IndexService
+from rag_mcp.application.progress_tracker import OnProgress
 from rag_mcp.application.search_service import SearchService
 from rag_mcp.application.status_service import StatusService
 from rag_mcp.mcp.middleware import MCPLoggingMiddleware, with_logging
+from rag_mcp.mcp.progress import mcp_on_progress_from_context
 
 
 class MCPTools:
@@ -29,25 +31,44 @@ class MCPTools:
         self._clear = clear_index_service
         self._middleware = middleware
 
-    async def index_folder(self, path: str, glob: str = "**/*") -> dict[str, Any]:
+    async def index_folder(
+        self,
+        path: str,
+        glob: str = "**/*",
+        *,
+        on_progress: OnProgress | None = None,
+    ) -> dict[str, Any]:
         try:
-            stats = await self._index.index_folder(path, glob)
+            stats = await self._index.index_folder(path, glob, on_progress=on_progress)
             return stats.to_dict()
         except FileNotFoundError as exc:
             return {"error": str(exc), "file_count": 0, "chunk_count": 0}
 
-    async def ask_question(self, question: str) -> dict[str, Any]:
+    async def ask_question(
+        self,
+        question: str,
+        *,
+        on_progress: OnProgress | None = None,
+    ) -> dict[str, Any]:
         try:
-            answer = await self._ask.ask_question(question)
+            answer = await self._ask.ask_question(question, on_progress=on_progress)
             return answer.to_dict()
         except (ValueError, ConnectionError) as exc:
             return {"error": str(exc), "answer": "", "sources": []}
         except Exception as exc:
             return {"error": f"Failed to answer: {exc}", "answer": "", "sources": []}
 
-    async def find_relevant_docs(self, query: str, top_k: int = 5) -> list[dict[str, Any]]:
+    async def find_relevant_docs(
+        self,
+        query: str,
+        top_k: int = 5,
+        *,
+        on_progress: OnProgress | None = None,
+    ) -> list[dict[str, Any]]:
         try:
-            chunks = await self._search.find_relevant_docs(query, top_k)
+            chunks = await self._search.find_relevant_docs(
+                query, top_k, on_progress=on_progress
+            )
             return [c.to_dict() for c in chunks]
         except Exception as exc:
             return [{"error": str(exc)}]
@@ -87,8 +108,9 @@ class MCPTools:
                 ),
             ] = "**/*",
         ) -> dict:
+            on_progress = mcp_on_progress_from_context()
             fn = with_logging(self._middleware, "index_folder", self.index_folder)
-            return await fn(path=path, glob=glob)
+            return await fn(path=path, glob=glob, on_progress=on_progress)
 
         @mcp.tool(
             description=(
@@ -106,8 +128,9 @@ class MCPTools:
                 "Natural language question about documents already indexed in the knowledge base.",
             ],
         ) -> dict:
+            on_progress = mcp_on_progress_from_context()
             fn = with_logging(self._middleware, "ask_question", self.ask_question)
-            return await fn(question=question)
+            return await fn(question=question, on_progress=on_progress)
 
         @mcp.tool(
             description=(
@@ -128,10 +151,11 @@ class MCPTools:
                 "Maximum number of top-ranked chunks to return (default: 5).",
             ] = 5,
         ) -> list:
+            on_progress = mcp_on_progress_from_context()
             fn = with_logging(
                 self._middleware, "find_relevant_docs", self.find_relevant_docs
             )
-            return await fn(query=query, top_k=top_k)
+            return await fn(query=query, top_k=top_k, on_progress=on_progress)
 
         @mcp.tool(
             description=(

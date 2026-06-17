@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from rag_mcp.application.ask_progress import AskProgressTracker
 from rag_mcp.config import Settings
 from rag_mcp.domain.graph.state import RAGState
 from rag_mcp.domain.models import Chunk, GradedChunk, Source
@@ -21,6 +22,10 @@ class GraphNodes:
         self._retriever = retriever
         self._settings = settings
         self._pipeline_logger = pipeline_logger
+        self._progress: AskProgressTracker | None = None
+
+    def set_progress(self, progress: AskProgressTracker | None) -> None:
+        self._progress = progress
 
     async def rewrite_query(self, state: RAGState) -> RAGState:
         question = state["question"]
@@ -32,6 +37,8 @@ class GraphNodes:
         rewritten = await self._llm.generate(prompt)
         query = rewritten.strip() or question
         self._pipeline_logger.log_rewrite(question, query)
+        if self._progress is not None:
+            await self._progress.rewrite_done()
         return {**state, "query": query}
 
     async def retrieve(self, state: RAGState) -> RAGState:
@@ -42,6 +49,8 @@ class GraphNodes:
             for c in chunks
         ]
         self._pipeline_logger.log_retrieve(query, self._settings.top_k, chunk_dicts)
+        if self._progress is not None:
+            await self._progress.retrieve_done()
         return {**state, "chunks": chunks}
 
     async def grade_chunks(self, state: RAGState) -> RAGState:
@@ -50,7 +59,7 @@ class GraphNodes:
         graded: list[GradedChunk] = []
         relevant: list[Chunk] = []
 
-        for chunk in chunks:
+        for index, chunk in enumerate(chunks):
             prompt = (
                 "Is the following document chunk relevant to the question? "
                 "Answer only 'yes' or 'no'.\n\n"
@@ -62,6 +71,8 @@ class GraphNodes:
             graded.append(gc)
             if is_relevant:
                 relevant.append(chunk)
+            if self._progress is not None:
+                await self._progress.grade_chunk(index, len(chunks))
 
         graded_dicts = [
             {"chunk_id": g.chunk.chunk_id, "relevant": g.relevant} for g in graded
@@ -80,6 +91,8 @@ class GraphNodes:
         )
         broadened = (await self._llm.generate(prompt)).strip() or query
         self._pipeline_logger.log_broaden(broadened, loop_count)
+        if self._progress is not None:
+            await self._progress.broaden_done(loop_count)
         return {**state, "query": broadened, "loop_count": loop_count}
 
     async def generate_answer(self, state: RAGState) -> RAGState:
@@ -101,4 +114,6 @@ class GraphNodes:
         self._pipeline_logger.log_generate(
             answer, [s.to_dict() for s in sources]
         )
+        if self._progress is not None:
+            await self._progress.generate_done()
         return {**state, "answer": answer, "sources": sources}
