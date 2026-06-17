@@ -4,8 +4,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from rag_mcp.application.progress_tracker import OnProgress, PROGRESS_TOTAL, ProgressTracker
-from rag_mcp.logging.pipeline_logger import PipelineLogger
+from rag_mcp.application.progress_tracker import PROGRESS_TOTAL, ProgressTracker
 
 _SCAN_END = 5
 _FILES_END = 25  # 20% — load/chunk по файлам
