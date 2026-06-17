@@ -106,6 +106,8 @@ final_project/
 ├─ docs/                         # ARCHITECTURE.md, source_task.md, ...
 ├─ docker-compose.yml            # server + ollama + модель
 ├─ Dockerfile
+├─ docker-compose.yml
+├─ .env.example                  # шаблон env; копировать в .env
 ├─ pyproject.toml
 ├─ mcp.config.example.json       # пример подключения MCP к VS Code Copilot
 ├─ README.md
@@ -468,7 +470,15 @@ event loop MCP-сервера.
 
 ## 10. Конфигурация (нет хардкода)
 
-`config.py` на `pydantic-settings`, значения из env/`.env`. Ключевые параметры:
+Три уровня (без дублирования моделей в коде и Docker):
+
+1. **`.env.example`** — шаблон и документация всех переменных; пользователь копирует в `.env`.
+2. **`docker-compose.yml`** — подстановка `${VAR:-default}`; `model-init` выполняет `ollama pull` по `LLM_MODEL` и `EMBEDDING_MODEL` из env. Пути контейнера (`/data/chroma`, `/data/logs`) заданы только в compose.
+3. **`config.py`** — `pydantic-settings`: читает env и `.env`; дефолты — fallback для тестов и CI.
+
+`Dockerfile` не содержит `ENV` с моделями — runtime-настройки приходят из compose/env.
+
+Ключевые параметры:
 
 | Параметр | Назначение | Пример |
 | --- | --- | --- |
@@ -506,8 +516,8 @@ flowchart LR
     OLL --- VOLS
 ```
 
-- Сервисы: `rag-mcp-server`, `ollama`, инициализация модели (pull при старте).
-- Запуск одной командой: `docker compose up`.
+- Сервисы: `rag-mcp-server`, `ollama`, `model-init` (pull моделей из `LLM_MODEL` / `EMBEDDING_MODEL` через env).
+- Запуск одной командой: `docker compose up` (дефолты в compose; переопределение через `.env` в корне проекта).
 - Тома для персистентности ChromaDB, логов и моделей Ollama.
 
 ---
@@ -560,7 +570,7 @@ flowchart LR
 | Блокировка event loop при LLM/индексации | async + `asyncio.to_thread` для блокирующих операций |
 | BM25-индекс в памяти при большом корпусе | при старте — гидратация из ChromaDB; после `index_folder` — полная пересборка BM25 из всех чанков в store; `index_status` читает `file_count` и `last_indexed_at` из Chroma metadata |
 | Зацикливание Corrective RAG | жёсткий лимит `MAX_BROADEN_LOOPS = 2`, форс-генерация |
-| Хардкод параметров | вся конфигурация в `config.py` из env |
+| Хардкод параметров | `.env.example` + env / compose `${VAR:-default}`; `config.py` — fallback |
 | Расхождение описаний инструментов с поведением | содержательные `description` и `Annotated`-описания параметров, проверяемые e2e и шагом сдачи 5 |
 
 ---

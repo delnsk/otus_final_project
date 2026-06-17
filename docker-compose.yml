@@ -21,12 +21,14 @@ services:
       - ollama_models:/root/.ollama
     entrypoint: >
       /bin/sh -c "
-      ollama pull phi3:mini &&
-      ollama pull nomic-embed-text &&
+      ollama pull $${LLM_MODEL} &&
+      ollama pull $${EMBEDDING_MODEL} &&
       echo 'Models ready'
       "
     environment:
       OLLAMA_HOST: http://ollama:11434
+      LLM_MODEL: ${LLM_MODEL:-phi3:mini}
+      EMBEDDING_MODEL: ${EMBEDDING_MODEL:-nomic-embed-text}
 
   rag-mcp-server:
     build: .
@@ -36,13 +38,20 @@ services:
       model-init:
         condition: service_completed_successfully
     environment:
-      OLLAMA_BASE_URL: http://ollama:11434
-      LLM_MODEL: phi3:mini
-      EMBEDDING_PROVIDER: ollama
-      EMBEDDING_MODEL: nomic-embed-text
+      OLLAMA_BASE_URL: ${OLLAMA_BASE_URL:-http://ollama:11434}
+      LLM_MODEL: ${LLM_MODEL:-phi3:mini}
+      EMBEDDING_PROVIDER: ${EMBEDDING_PROVIDER:-ollama}
+      EMBEDDING_MODEL: ${EMBEDDING_MODEL:-nomic-embed-text}
+      CHUNK_SIZE: ${CHUNK_SIZE:-800}
+      CHUNK_OVERLAP: ${CHUNK_OVERLAP:-100}
+      TOP_K: ${TOP_K:-5}
+      RRF_K: ${RRF_K:-60}
+      GRADE_RELEVANCE_THRESHOLD: ${GRADE_RELEVANCE_THRESHOLD:-3}
+      MAX_BROADEN_LOOPS: ${MAX_BROADEN_LOOPS:-2}
+      LOG_MAX_BYTES: ${LOG_MAX_BYTES:-1000000}
       CHROMA_PATH: /data/chroma
       LOG_DIR: /data/logs
-      LOG_VIEWER_PORT: 8765
+      LOG_VIEWER_PORT: ${LOG_VIEWER_PORT:-8765}
       PYTHONPATH: /app/src
     volumes:
       - chroma_data:/data/chroma

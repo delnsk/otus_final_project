@@ -6,10 +6,13 @@ MCP-сервер с Corrective RAG-пайплайном на LangGraph, гибр
 
 ```bash
 git clone <repo-url> && cd final_project
+cp .env.example .env   # опционально: смена моделей и параметров (см. ниже)
 docker compose up
 ```
 
-При первом запуске сервис `model-init` скачивает модели `phi3:mini` и `nomic-embed-text` (может занять несколько минут).
+`docker compose up` работает и без `.env` — значения по умолчанию заданы в `docker-compose.yml` и совпадают с `.env.example`. Чтобы сменить LLM или эмбеддинги, скопируйте `.env.example` → `.env` и отредактируйте одну строку (например `LLM_MODEL=qwen2.5:3b`); `model-init` подтянет нужные модели автоматически.
+
+При первом запуске сервис `model-init` скачивает модели из `LLM_MODEL` и `EMBEDDING_MODEL` (по умолчанию `phi3:mini` и `nomic-embed-text`; может занять несколько минут).
 
 | Сервис | Назначение |
 | --- | --- |
@@ -53,23 +56,23 @@ docker compose up
 
 Пример для **локального запуска** без Docker (нужны Python 3.11+, установленный Ollama с моделями):
 
+```bash
+cp .env.example .env   # настройки читаются из .env в корне проекта
+```
+
 ```json
 {
   "mcpServers": {
     "rag-knowledge-base": {
       "command": "python",
       "args": ["-m", "rag_mcp"],
-      "cwd": "/path/to/final_project",
-      "env": {
-        "OLLAMA_BASE_URL": "http://localhost:11434",
-        "LLM_MODEL": "phi3:mini",
-        "EMBEDDING_PROVIDER": "ollama",
-        "EMBEDDING_MODEL": "nomic-embed-text"
-      }
+      "cwd": "${workspaceFolder}"
     }
   }
 }
 ```
+
+Переменные (`LLM_MODEL`, `EMBEDDING_PROVIDER` и др.) задаются в `.env`; при необходимости их можно переопределить в блоке `env` конфига MCP.
 
 2. Перезапустите MCP в IDE — агент должен увидеть 5 инструментов с содержательными `description`.
 
@@ -147,7 +150,13 @@ find_relevant_docs("Майк Душнов", 5)
 
 ## Конфигурация
 
-Переменные окружения (см. [`src/rag_mcp/config.py`](src/rag_mcp/config.py)):
+Единый шаблон — [`.env.example`](.env.example). Скопируйте в `.env` и при необходимости измените значения.
+
+| Источник | Когда используется |
+| --- | --- |
+| `.env` | Локальный запуск (`python -m rag_mcp`); Docker Compose подставляет `${VAR}` из `.env` в корне проекта |
+| `docker-compose.yml` | Дефолты `${VAR:-…}` для `docker compose up` без `.env`; пути контейнера (`/data/chroma`, `/data/logs`) |
+| `src/rag_mcp/config.py` | Fallback-дефолты pydantic-settings (тесты, CI без `.env`) |
 
 | Переменная | По умолчанию | Назначение |
 | --- | --- | --- |
@@ -156,10 +165,14 @@ find_relevant_docs("Майк Душнов", 5)
 | `EMBEDDING_PROVIDER` | `chroma` | `chroma` или `ollama` |
 | `EMBEDDING_MODEL` | `nomic-embed-text` | Модель эмбеддингов (для `ollama`) |
 | `CHROMA_PATH` | `./data/chroma` | Путь к ChromaDB |
-| `CHUNK_SIZE` / `CHUNK_OVERLAP` | `1000` / `200` | Параметры чанкинга |
+| `CHUNK_SIZE` / `CHUNK_OVERLAP` | `800` / `100` | Параметры чанкинга |
 | `TOP_K` / `RRF_K` | `5` / `60` | Retrieval и RRF |
+| `GRADE_RELEVANCE_THRESHOLD` | `3` | Порог «достаточно релевантных» чанков |
+| `MAX_BROADEN_LOOPS` | `2` | Лимит циклов broaden в графе |
 | `LOG_DIR` | `./data/logs` | Каталог логов |
 | `LOG_VIEWER_PORT` | `8765` | Порт Log Viewer |
+
+Смена модели: одна строка в `.env` (`LLM_MODEL=…`) — без правки `docker-compose.yml`, `Dockerfile` или кода.
 
 ## Разработка
 
